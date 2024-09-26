@@ -1,42 +1,49 @@
-<form [formGroup]="empForm" (ngSubmit)="onSubmit()">
-  <div formArrayName="employees">
-    <div *ngFor="let employee of employees().controls; let empIndex=index">
-      <div
-        [formGroupName]="empIndex"
-        style="border: 1px solid blue; padding: 10px; width: 600px; margin: 5px;"
-      >
-        {{empIndex}} First Name :
-        <input type="text" formControlName="firstName" />
-        Last Name:
-        <input type="text" formControlName="lastName" />
+<form [formGroup]="registerForm">
+  <div formArrayName="categories">
+    <table>
+      <tr>
+        <th>Category Name</th>
+        <th>Items</th>
+      </tr>
+      <!-- Outer FormArray (Categories) -->
+      <div *ngFor="let category of categoriesArray.controls; let i = index" [formGroupName]="i">
+        <tr>
+          <td>
+            <!-- Category Name -->
+            <input formControlName="categoryName" placeholder="Category Name"><br>
+            <button (click)="editCategory(i)">Edit Category</button><br>
+            <button (click)="removeCategory(i)">Remove Category</button>
+            <!-- Add Item Button -->
+            <button (click)="addItem(i)">Add Item</button><br>
+          </td>
+          <td>
+            <!-- Inner FormArray (Items) -->
+            <div formArrayName="items">
+              <div *ngFor="let item of getItemsArray(i).controls; let j = index" [formGroupName]="j">
 
-        <button (click)="removeEmployee(empIndex)">Remove</button>
+                <!-- Item Name -->
+                <input formControlName="itemName" placeholder="Item Name"><br>
+                <input formControlName="itemCode" placeholder="Item Code"><br>
 
-        <div formArrayName="skills">
-          <div
-            *ngFor="let skill of employeeSkills(empIndex).controls; let skillIndex=index"
-          >
-            <div [formGroupName]="skillIndex">
-              {{skillIndex}} Skill :
-              <input type="text" formControlName="skill" />
-              Exp:
-              <input type="text" formControlName="exp" />
+                <!-- Remove Item Button -->
+                <button (click)="removeItem(i, j)">Remove Item</button><br>
+                <button (click)="viewItem(i, j)">View Item</button><br>
+                <button (click)="editItem(i, j)">Edit Item</button><br>
 
-              <button (click)="removeEmployeeSkill(empIndex,skillIndex)">
-                Remove
-              </button>
+
+              </div>
             </div>
-          </div>
-        </div>
-        <button type="button" (click)="addEmployeeSkill(empIndex)">
-          Add Skill
-        </button>
+          </td>
+        </tr>
+
+
+
       </div>
-    </div>
-    <button type="button" (click)="addEmployee()">Add Employee</button>
+
+    </table>
   </div>
+
+  <!-- Add Category Button -->
+  <button (click)="addCategory()">Add Category</button><br>
+  <button (click)="categoriesView()">view data</button>
 </form>
-
-{{this.empForm.value | json}}
-
-<br /><br />

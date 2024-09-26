@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-
-import { FormGroup, FormArray, FormBuilder } from '@angular/forms'
+import { FormBuilder, FormArray, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -8,70 +7,99 @@ import { FormGroup, FormArray, FormBuilder } from '@angular/forms'
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'nestedformarray';
+  registerForm: FormGroup;
 
-  empForm:FormGroup;
- 
-constructor(private fb:FormBuilder) {
-   this.empForm=this.fb.group({
-     employees: this.fb.array([]) ,
-   })
-   console.log('constructor form creation');
-   
-}
-ngOnInit() {
-  
-}
-employees(): FormArray {
-  console.log('employees()');
-  return this.empForm.get("employees") as FormArray
-}
+  constructor(private fb: FormBuilder) {
+    this.registerForm = this.fb.group({
+      categories: this.fb.array([])  // Outer FormArray
+    });
+  }
 
-newEmployee(): FormGroup {
-  console.log('newEmployee()');
-  return this.fb.group({
-    firstName: '',
-    lastName: '',
-    skills:this.fb.array([])
-  })
-}
+  // Get the outer FormArray (categories)
+  get categoriesArray(): FormArray {
+    return this.registerForm.get('categories') as FormArray;
+  }
 
-addEmployee() {
-  console.log('addEmployee()');
+  // Get the inner FormArray (items) for a specific category
+  getItemsArray(index: number): FormArray {
+    return this.categoriesArray.at(index).get('items') as FormArray;
+  }
 
-  this.employees().push(this.newEmployee());
-}
+  // Create a new FormGroup for the outer array (category)
+  createCategoryFormGroup(): FormGroup {
+    return this.fb.group({
+      categoryName: [''],
+      items: this.fb.array([])  // Inner FormArray
+    });
+  }
 
-removeEmployee(empIndex:number) {
-  console.log('removeEmployee()');
-  this.employees().removeAt(empIndex);
-}
+  // Create a new FormGroup for the inner array (item)
+  createItemFormGroup(): FormGroup {
+    return this.fb.group({
+      itemName: [''],
+      itemCode: ['']
+    });
+  }
 
-employeeSkills(empIndex:number) : FormArray {
-  console.log('employeeSkills()');
-  return this.employees().at(empIndex).get("skills") as FormArray
-}
+  // Add a new category to the outer FormArray
+  addCategory(): void {
+    this.categoriesArray.push(this.createCategoryFormGroup());
+  }
 
-newSkill(): FormGroup {
-  console.log('newSkill()');
-  return this.fb.group({
-    skill: '',
-    exp: '',
-  })
-}
+  // Add a new item to the inner FormArray for a specific category
+  addItem(categoryIndex: number): void {
+    const itemsArray = this.getItemsArray(categoryIndex);
+    itemsArray.push(this.createItemFormGroup());
+  }
 
-addEmployeeSkill(empIndex:number) {
-  console.log('addEmployeeSkill()');
-  this.employeeSkills(empIndex).push(this.newSkill());
-}
+  // Remove a category from the outer FormArray
+  removeCategory(index: number): void {
+    this.categoriesArray.removeAt(index);
+  }
 
-removeEmployeeSkill(empIndex:number,skillIndex:number) {
-  console.log('removeEmployeeSkill()');
-  this.employeeSkills(empIndex).removeAt(skillIndex);
-}
+  // Remove an item from the inner FormArray for a specific category
+  removeItem(categoryIndex: number, itemIndex: number): void {
+    const itemsArray = this.getItemsArray(categoryIndex);
+    itemsArray.removeAt(itemIndex);
+  }
 
-onSubmit() {
-  console.log(this.empForm.value);
-}
+   // view a category in the outer FormArray
+  categoriesView(){
+    console.log(this.categoriesArray.value);
+  }
 
+ // view a item in the inner FormArray
+  viewItem(cat:number,item:number){
+    console.log(this.getItemsArray(cat).value[item]);
+  }
+
+  editItem(categoryIndex: number, itemIndex: number): void {
+    const itemsArray = this.getItemsArray(categoryIndex);
+    const item = itemsArray.at(itemIndex);
+
+    // Here, for simplicity, we are setting a new value. In real scenarios, this could open a modal or input fields to edit.
+    const newValue = prompt('Enter new item name', item.value.itemName);
+
+    if (newValue) {
+      // Update the form control value for the specific item
+      item.patchValue({
+        itemName: newValue
+      });
+    }
+  }
+
+  // Edit a category in the outer FormArray
+  editCategory(categoryIndex: number): void {
+    const category = this.categoriesArray.at(categoryIndex);
+
+    // Get the current category name and prompt the user for a new value
+    const newCategoryName = prompt('Enter new category name', category.value.categoryName);
+
+    if (newCategoryName) {
+      // Update the form control value for the category
+      category.patchValue({
+        categoryName: newCategoryName
+      });
+    }
+  }
 }
